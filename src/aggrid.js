@@ -271,8 +271,9 @@ const simpleHandleContextMenu=(selectedRowIds,
       />
     
 <div className="button-container">
-        <button onClick={handleDelete}>Delete Row</button>
         <button onClick={addNewRow}>Add NewRow</button>
+        <button onClick={handleDelete}>Delete Row</button>
+        
         </div>
         </div>
     
