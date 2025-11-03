@@ -29,7 +29,7 @@ const getPeople = () => [
     id: 3,
     name: "ayesha",
    dob: "15-08-1985",
-    age: 33,
+    age: 34,
     gender: "",
     mail: "yyyy@gmail.com",
     status: true,
