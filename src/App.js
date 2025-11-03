@@ -1,173 +1,117 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ReactGrid } from "@silevis/reactgrid";
-import "@silevis/reactgrid/styles.css";
+import React, { useState } from "react";
 
-const getPeople = () => [
+// Step 1: Define your menu options
+const menuOptions = [
   {
-    id: 1,
-    name: "azath",
-    dob: "07-04-1986",
-    age: 40,
-    gender: "",
-    mail: "azath4u@gmail.com",
-    status: true,
+    id: "addRow",
+    label: "Add Row",
+    handler: (selectedRowIds, selectedColIds, selectionMode, selectedRanges, setData) => {
+      const newRow = { id: Date.now().toString(), name: "New Row" };
+      setData((prev) => [...prev, newRow]);
+      console.log("✅ Row added:", newRow);
+    },
   },
   {
-    id: 2,
-    name: "naveen",
-    dob: "15-08-1985",
-    age: 39,
-    gender: "",
-    mail: "xxxx@gmail.com",
-    status: true,
+    id: "deleteRow",
+    label: "Delete Row",
+    handler: (selectedRowIds, selectedColIds, selectionMode, selectedRanges, setData) => {
+      setData((prev) => prev.filter((row) => !selectedRowIds.includes(row.id)));
+      console.log("🗑 Deleted row(s):", selectedRowIds);
+    },
   },
   {
-    id: 3,
-    name: "ayesha",
-    dob: "15-08-1985",
-    age: 33,
-    gender: "",
-    mail: "yyyy@gmail.com",
-    status: true,
+    id: "copyCell",
+    label: "Copy Cell",
+    handler: (selectedRowIds, selectedColIds, selectionMode, selectedRanges) => {
+      console.log("📋 Copying cells:", selectedRanges);
+      alert("Copied cell range: " + JSON.stringify(selectedRanges));
+    },
   },
 ];
 
-const getColumns = () => [
-  { columnId: "id", width: 100 },
-  { columnId: "name", width: 150 },
-  { columnId: "dob", width: 150 },
-  { columnId: "age", width: 100 },
-  { columnId: "gender", width: 100 },
-  { columnId: "mail", width: 150 },
-  { columnId: "status", width: 150 },
-];
+// Step 2: Component
+function App() {
+  const [data, setData] = useState([
+    { id: "row-1", name: "John" },
+    { id: "row-2", name: "Jane" },
+  ]);
+  const [contextMenu, setContextMenu] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
 
-const headerRow = {
-  rowId: "header",
-  cells: [
-    { type: "header", text: "Id" },
-    { type: "header", text: "Name" },
-    { type: "header", text: "Date Of Birth" },
-    { type: "header", text: "Age" },
-    { type: "header", text: "Gender" },
-    { type: "header", text: "Email" },
-    { type: "header", text: "Married" },
-  ],
-};
-const options = [
-  { label: "Male", value: "male" },
-  { label: "Female", value: "female" },
-];
-const getRows = (people, opencell) => [
-  headerRow,
-  ...people.map((person, index) => {
-    if(index === 0) {
-    console.log("Gender from get rows:", person.gender, "Index:",  index);
-    }
-    return {
-      rowId: index.toString(),
-      cells: [
-        { type: "number", value: person.id },
-        { type: "text", text: person.name },
-        { type: "date", date: new Date(person.dob) },
-        { type: "number", value: person.age },
-        {
-          type: "dropdown",
-          values: options,
-
-          selectedValue: person.gender,
-          isOpen: opencell === index.toString(),
-        },
-        {
-          type: "email",
-          text: person.mail,
-          renderer: (text) => {
-            const isValid = /\S+@\S+\.\S+/.test(text);
-          return <span style={{ color: isValid?"green":"red" }}>{text}</span>
-          },
-        },
-        {
-          type: "checkbox",
-          checked: person.status,
-          checkedText: "Married",
-          uncheckedText: "Single",
-        },
-      ],
-    };
-  }),
-];
-
-export default function App() {
-  const [people, setPeople] = useState(()=>{
-const saved=localStorage.getItem("peopleData");
-return saved?JSON.parse(saved):getPeople();
-  });
-  const [opencell, setOpencell] = useState(null);
-useEffect(()=>{
-  localStorage.setItem("peopleData",JSON.stringify(people));
-},[people])
-
-  const rows = useMemo(() => {
-        return getRows(people, opencell);
-  }, [people, opencell]) ;
-  const columns = useMemo(() => getColumns(), []);
-  /*const handlefocus = (location) => {
-    //console.log("Loaction",location);
-   if (location && location.columnId === "gender") {
-      setOpencell(location.rowId);
-    } else {
-      setOpencell(false);
-    }
-};*/
-  const handleChanges = useCallback((changes) => {
-    //console.log("changes:",changes);
-    const updated = [...people];
-    changes.forEach((change) => {
-      const rowIndex = parseInt(change.rowId, 10);
-
-      if (change.columnId === "name") {
-        updated[rowIndex].name = change.newCell.text;
-      } else if (change.columnId === "dob") {
-        updated[rowIndex].dob = change.newCell.date;
-      } else if (change.columnId === "age") {
-        updated[rowIndex].age = change.newCell.value;
-      } else if (change.columnId === "gender") {
-        // to set the changed value
-        const newGender = change.newCell.selectedValue;
-        if (newGender !== change.previousCell.selectedValue) {
-          updated[rowIndex].gender = newGender;
-        }
-        // to open a dropdown
-        if (change.newCell.isOpen) {
-          setOpencell(change.rowId);
-        } else {
-          setOpencell(null);
-        }
-      } else if (change.columnId === "mail") {
-        console.log("New email cell", change.newCell);
-        
-        updated[rowIndex].mail = change.newCell.text;
-      } else if (
-        change.columnId === "status" &&
-        change.newCell.checked !== undefined
-      ) {
-        updated[rowIndex].status = change.newCell.checked;
-      }
+  // Step 3: Show context menu on right-click
+  const handleRightClick = (event, row) => {
+    event.preventDefault();
+    setSelectedRow(row);
+    setContextMenu({
+      mouseX: event.clientX + 2,
+      mouseY: event.clientY - 6,
     });
+  };
 
-    setPeople(updated);
-  }, [people]);
+  // Step 4: Handle menu click
+  const handleMenuClick = (option) => {
+    option.handler([selectedRow.id], [], "row", [[{ rowId: selectedRow.id }]], setData);
+    setContextMenu(null);
+  };
+
+  // Step 5: Hide menu when clicking outside
+  const handleClickAway = () => setContextMenu(null);
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Employee Details</h2>
-      <ReactGrid
-        rows={rows}
-        columns={columns}
-        onCellsChanged={handleChanges}
-       
-        enableRangeSelection={true}
-      />
+    <div onClick={handleClickAway} style={{ padding: "30px", fontFamily: "sans-serif" }}>
+      <h2>🧩 Real-Time Menu Example</h2>
+
+      <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", width: "50%" }}>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row) => (
+            <tr key={row.id} onContextMenu={(e) => handleRightClick(e, row)}>
+              <td>{row.id}</td>
+              <td>{row.name}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Step 6: Custom context menu */}
+      {contextMenu && (
+        <ul
+          style={{
+            position: "absolute",
+            top: contextMenu.mouseY,
+            left: contextMenu.mouseX,
+            background: "#fff",
+            border: "1px solid #ccc",
+            borderRadius: "6px",
+            listStyle: "none",
+            padding: "6px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          }}
+        >
+          {menuOptions.map((option) => (
+            <li
+              key={option.id}
+              onClick={() => handleMenuClick(option)}
+              style={{
+                padding: "6px 12px",
+                cursor: "pointer",
+                borderBottom: "1px solid #eee",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#f5f5f5")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+            >
+              {option.label}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
+
+export default App;
