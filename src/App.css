@@ -3,8 +3,16 @@
  overflow:scroll;
  border:1px solid #ccc;
  border-radius: 8px;
+ 
 }
 .react-Grid h2{
   position: sticky;
   top:0;
+}
+.button-container{
+  display: flex;
+  justify-content:center;
+  align-items: center;
+  gap:20px;
+  margin-top: 20px;
 }
