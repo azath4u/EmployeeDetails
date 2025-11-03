@@ -257,8 +257,7 @@ const simpleHandleContextMenu=(selectedRowIds,
           pasteLabel: "📥 Paste me!",
           cutLabel: "✂️ Cut me!",
           deleteRowLabel: "🗑 Delete Row",
-          insertRowAboveLabel: "⬆ Insert Above",
-          insertRowBelowLabel: "⬇ Insert Below",
+         
         }}
         //stickyTopRows={1}
         onFocusLocationChanged={handlefocus}
