@@ -1,8 +1,10 @@
-.App {
-  max-width: 600px;
-  margin: 60px auto;
-  background: white;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.react-Grid {
+ height:200px;
+ overflow:scroll;
+ border:1px solid #ccc;
+ border-radius: 8px;
+}
+.react-Grid h2{
+  position: sticky;
+  top:0;
 }
