@@ -116,7 +116,8 @@ const getRows = (people, opencell) => [
 
 export default function App() {
 const[columns,setColumns]=useState(getColumns());
- const handleColumnResize = (columnId, width) => {
+
+const handleColumnResize = (columnId, width) => {
     setColumns((prevColumns) => {
       const columnIndex = prevColumns.findIndex((el) => el.columnId === columnId);
       
@@ -131,10 +132,27 @@ const[columns,setColumns]=useState(getColumns());
 
   const [people, setPeople] = useState(()=>{
     const saved=localStorage.getItem("peopleData");
-    return saved?JSON.parse(saved):getPeople();
+const storedData=saved?JSON.parse(saved):getPeople();
+  if (storedData.length === 0) {
+    return [
+      {
+        id: 1,
+        name: "",
+        dob: "",
+        age: "",
+        gender: "",
+        mail: "",
+        status: false,
+        city: "",
+      },
+    ];
+  }
+
+  return storedData;
   });
   const [opencell, setOpencell] = useState(null);
 const[selectlocationId,setselectedlocationId]=useState(null);
+
 useEffect(()=>{
   localStorage.setItem("peopleData",JSON.stringify(people))
 },[people])
@@ -172,9 +190,18 @@ let shouldAddRow = false;
       if (change.columnId === "name") {
         updated[rowIndex].name = change.newCell.text;
       } else if (change.columnId === "dob") {
-        updated[rowIndex].dob = change.newCell.date;
+       const dob=new Date(change.newCell.date);
+        updated[rowIndex].dob = dob;
+
+        const today=new Date();
+        let agevalue=today.getFullYear()-dob.getFullYear();  
+        const monthDiff=today.getMonth()-dob.getMonth();
+        if(monthDiff<0 || (monthDiff===0 && today.getDate()<dob.getDate())){
+          agevalue--;
+        }
+        updated[rowIndex].age=agevalue;
       } else if (change.columnId === "age") {
-        updated[rowIndex].age = change.newCell.value;
+              // updated[rowIndex].age = change.newCell.value;
       } else if (change.columnId === "gender") {
 
         // to set the changed value
@@ -229,7 +256,9 @@ const handleDelete=()=>{
 const updated=people.filter((_,index)=>index.toString()!==selectlocationId).map((person,index)=>({
   ...person,id:index+1
 }));
+
 setPeople(updated);
+
 }
 
 
